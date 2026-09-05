@@ -1,9 +1,9 @@
 class Agentos < Formula
   desc "Self-hosted personal agent with browser setup and Telegram"
   homepage "https://github.com/Jongtae/homebrew-agentos"
-  url "https://github.com/Jongtae/homebrew-agentos/archive/33710821a0f2b7459526987af466e77f90e074f0.tar.gz"
-  version "0.1.5"
-  sha256 "3dfec0096d59570f4f7e2388414e1e3ee0fea49ef969bf0e6cdb13a9f3c041ea"
+  url "https://github.com/Jongtae/homebrew-agentos/archive/e3fd9795f341fa19ceb17655b45b6744dea0961b.tar.gz"
+  version "0.1.6"
+  sha256 "80f864d684074850ff92d6a7fa68c7b02b7da500cdf6a0998873c1918c603f3a"
   depends_on "python@3.13"
 
   def install
