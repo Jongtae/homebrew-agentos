@@ -9,7 +9,7 @@ from .local_tools import LocalTools
 
 AGENTS={
  'researcher':{'name':'조사 에이전트','instructions':'Research the assigned question using read-only tools when needed. Cite evidence and identify gaps. Never invent findings.'},
- 'reviewer':{'name':'검토 에이전트','instructions':'Review the supplied material for mistakes, unsupported claims and concrete improvements. Use read-only tools if needed.'},
+ 'reviewer':{'name':'검토 에이전트','instructions':'Produce a review report of the supplied material: findings, uncertainties, and concrete improvements. Review what is provided now. Do not ask whether to edit or save files; editing is not your task. Use read-only tools only if evidence is missing.'},
 }
 
 def schema(name,description,properties=None,required=None):
@@ -102,7 +102,7 @@ POLICY='''You are a general personal agent. For each NEW request select the rele
 def run_agent(adapter,config,key,history,system,capabilities,record,scope='main'):
  messages=[{'role':'system','content':POLICY+'\n'+system},*history]
  definitions=capabilities.definitions();specs={d['function']['name']:d['function']['parameters'] for d in definitions}
- sources=[];failed=False;count=0;successful=0
+ sources=[];failed=False;count=0;successful=0;invalid_calls=set()
  active_config=dict(config);rerouted=False;checked_direct=False
  for turn in range(9):
   try:
@@ -126,30 +126,37 @@ def run_agent(adapter,config,key,history,system,capabilities,record,scope='main'
    if not isinstance(content,str) or not content.strip():raise ProviderError('모델이 답변을 반환하지 않았습니다.')
    if sources:content+='\n\n조회 출처:\n'+'\n'.join(dict.fromkeys(sources))
    result=ModelResult(content[:24000],config['provider'],actual)
-   result.outcome=('partial' if successful else 'failed') if failed else 'succeeded'
+   result.outcome=('partial' if successful else 'failed') if (failed or invalid_calls) else 'succeeded'
    return result
   if not isinstance(calls,list) or turn==8 or count+len(calls)>12:raise ProviderError('도구 호출 한도 또는 응답 형식 오류입니다.')
   ids=[c.get('id') for c in calls if isinstance(c,dict)]
   if len(ids)!=len(calls) or any(not isinstance(i,str) or not i for i in ids) or len(set(ids))!=len(ids):raise ProviderError('도구 호출 식별자가 올바르지 않습니다.')
   messages.append(message)
   for call in calls:
-   count+=1;name='unknown'
+   count+=1;name='unknown';validated=False
    try:
-    function=call.get('function',{});name=function.get('name');args=json.loads(function.get('arguments','{}'))
+    function=call.get('function',{});name=function.get('name')
+    if not isinstance(name,str):
+     name='unknown';raise ValueError('도구 이름은 문자열이어야 합니다.')
+    args=json.loads(function.get('arguments','{}'))
     spec=specs.get(name)
     if not spec or not isinstance(args,dict) or set(args)-set(spec['properties']) or set(spec['required'])-set(args):raise ValueError('허용하지 않은 도구 또는 인수입니다.')
     if any(not isinstance(v,str) for v in args.values()):raise ValueError('도구 인수는 문자열이어야 합니다.')
+    validated=True
     record(name,'running',json.dumps({'scope':scope,'call_id':call['id'],'arguments':args},ensure_ascii=False))
     cache_key=json.dumps([name,args],sort_keys=True)
     if cache_key not in capabilities.memo:capabilities.memo[cache_key]=capabilities.execute(name,args)
     result=capabilities.memo[cache_key]
     if name in ('find_files','read_file','list_notes'):capabilities.evidence.append({'tool':name,'result':result})
     if result.get('outcome') in ('failed','partial'):failed=True
+    invalid_calls.discard(name)
     successful+=1
     sources.extend(result.get('sources',[]))
     record(name,'succeeded',json.dumps({'scope':scope,'call_id':call['id'],'result':result},ensure_ascii=False))
    except (ValueError,TypeError,AttributeError,OSError,ProviderError) as exc:
-    failed=True;result={'error':str(exc)}
+    if validated:failed=True
+    else:invalid_calls.add(name if isinstance(name,str) else 'unknown')
+    result={'error':str(exc)}
     record(name,'failed',json.dumps({'scope':scope,'call_id':call['id'],'error':str(exc)},ensure_ascii=False))
    encoded=json.dumps(result,ensure_ascii=False)
    if len(encoded)>24000:encoded=json.dumps({'truncated':True,'preview':encoded[:22000]},ensure_ascii=False)

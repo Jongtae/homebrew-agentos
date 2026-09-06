@@ -102,3 +102,16 @@ class ProviderToolProtocolTests(unittest.TestCase):
    caps=Capabilities(store,adapter,CFG,'','job',lambda *a:None)
    run_agent(adapter,CFG,'',[{'role':'user','content':'save once'}],'',caps,lambda *a:None)
    self.assertEqual(len(store.notes()),1)
+ def test_corrected_arguments_keep_failure_log_but_complete(self):
+  count=0;events=[]
+  def transport(url,body,headers):
+   nonlocal count
+   count+=1
+   if count<3:return {'choices':[{'message':{'tool_calls':[{'id':str(count),'function':{'name':'list_agents','arguments':'{"bad":"key"}' if count==1 else '{}'}}]}}]}
+   return {'choices':[{'message':{'content':'done'}}]}
+  with tempfile.TemporaryDirectory() as folder:
+   store=QuickStore(Path(folder));adapter=ModelAdapter(transport)
+   caps=Capabilities(store,adapter,CFG,'','job',lambda *a:None)
+   result=run_agent(adapter,CFG,'',[{'role':'user','content':'list agents'}],'',caps,lambda *a:events.append(a))
+   self.assertEqual(result.outcome,'succeeded')
+   self.assertIn(('list_agents','failed'),[(e[0],e[1]) for e in events])
