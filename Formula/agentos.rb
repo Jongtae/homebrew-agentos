@@ -1,8 +1,8 @@
 class Agentos < Formula
   desc "Self-hosted personal agent with browser setup and Telegram"
   homepage "https://github.com/Jongtae/personal-agentos"
-  url "https://github.com/Jongtae/personal-agentos/archive/refs/tags/v0.2.3.tar.gz"
-  sha256 "2e137330f343557fb5f34c1afb0569c2e2ff04860fe8f175f98b8a1a13441f40"
+  url "https://github.com/Jongtae/personal-agentos/archive/refs/tags/v0.2.5.tar.gz"
+  sha256 "764b00c27023ba139aa4639e6f37efa5ffe6c87085af7b3260f49855f54967d9"
   depends_on "python@3.13"
 
   def install
