@@ -1,5 +1,4 @@
 class Agentos < Formula
-  include Language::Python::Virtualenv
   desc "Self-hosted personal agent with browser setup and Telegram"
   homepage "https://github.com/Jongtae/personal-agentos"
   url "https://github.com/Jongtae/personal-agentos/archive/refs/tags/v1.0.0.tar.gz"
@@ -7,7 +6,7 @@ class Agentos < Formula
   depends_on "python@3.13"
 
   def install
-    virtualenv_create(libexec, "python3.13")
+    system Formula["python@3.13"].opt_bin/"python3.13", "-m", "venv", libexec
     system libexec/"bin/pip", "install", buildpath
     (bin/"agentos").write <<~PYTHON
       #!#{libexec}/bin/python
