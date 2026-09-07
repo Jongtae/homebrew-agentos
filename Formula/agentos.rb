@@ -1,4 +1,5 @@
 class Agentos < Formula
+  include Language::Python::Virtualenv
   desc "Self-hosted personal agent with browser setup and Telegram"
   homepage "https://github.com/Jongtae/personal-agentos"
   url "https://github.com/Jongtae/personal-agentos/archive/refs/tags/v1.0.0.tar.gz"
