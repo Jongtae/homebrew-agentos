@@ -8,7 +8,7 @@ class Agentos < Formula
   def install
     libexec.install "personal_agent"
     (bin/"agentos").write <<~PYTHON
-      #!#{Formula["python@3.13"].opt_bin}/python3.13
+      #!#{formula_opt_bin("python@3.13")}/python3.13
       import sys
       sys.path.insert(0, "#{libexec}")
       from personal_agent.quickstart import main
