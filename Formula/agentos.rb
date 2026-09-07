@@ -6,11 +6,10 @@ class Agentos < Formula
   depends_on "python@3.13"
 
   def install
-    libexec.install "personal_agent"
+    virtualenv_create(libexec, "python3.13")
+    system libexec/"bin/pip", "install", buildpath
     (bin/"agentos").write <<~PYTHON
-      #!#{formula_opt_bin("python@3.13")}/python3.13
-      import sys
-      sys.path.insert(0, "#{libexec}")
+      #!#{libexec}/bin/python
       from personal_agent.quickstart import main
       main()
     PYTHON
