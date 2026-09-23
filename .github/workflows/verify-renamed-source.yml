@@ -31,7 +31,10 @@ jobs:
         run: |
           set -euo pipefail
           export HOMEBREW_NO_AUTO_UPDATE=1
-          brew install --formula ./Formula/agentos.rb
+          brew tap-new jongtae/agentos
+          tap_repo="$(brew --repository jongtae/agentos)"
+          cp Formula/agentos.rb "$tap_repo/Formula/agentos.rb"
+          brew install jongtae/agentos/agentos
           agentos --help >/tmp/agentos-help.txt
           grep -qi "personal agent" /tmp/agentos-help.txt
-          brew test agentos
+          brew test jongtae/agentos/agentos
