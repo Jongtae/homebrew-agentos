@@ -1,0 +1,23 @@
+name: verify renamed AgentOS source
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify v1.1.0 archive checksum after repository rename
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://github.com/Jongtae/agentos/archive/refs/tags/v1.1.0.tar.gz"
+          curl -L --fail --retry 3 -o /tmp/agentos-v1.1.0.tar.gz "$url"
+          actual="$(sha256sum /tmp/agentos-v1.1.0.tar.gz | awk '{print $1}')"
+          echo "RENAMED_ARCHIVE_SHA256=$actual"
+          expected="35c82bd40725490b6bb2ea3637f618b8e8bef9afa9cb2ccb9b1fe2bf858f2971"
+          if [[ "$actual" != "$expected" ]]; then
+            echo "::error title=Archive checksum changed after repository rename::expected=$expected actual=$actual"
+            exit 1
+          fi
