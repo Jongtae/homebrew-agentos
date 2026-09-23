@@ -21,3 +21,17 @@ jobs:
             echo "::error title=Archive checksum mismatch::expected=$expected actual=$actual"
             exit 1
           fi
+
+  formula:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install and test Formula from renamed source
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOMEBREW_NO_AUTO_UPDATE=1
+          brew install --formula ./Formula/agentos.rb
+          agentos --help >/tmp/agentos-help.txt
+          grep -qi "personal agent" /tmp/agentos-help.txt
+          brew test agentos
