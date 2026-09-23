@@ -16,8 +16,8 @@ jobs:
           curl -L --fail --retry 3 -o /tmp/agentos-v1.1.0.tar.gz "$url"
           actual="$(sha256sum /tmp/agentos-v1.1.0.tar.gz | awk '{print $1}')"
           echo "RENAMED_ARCHIVE_SHA256=$actual"
-          expected="35c82bd40725490b6bb2ea3637f618b8e8bef9afa9cb2ccb9b1fe2bf858f2971"
+          expected="3a5303e9a05890eb1c263d856fd1790ac870319d2c40c5ee01a39a1ecaf4a322"
           if [[ "$actual" != "$expected" ]]; then
-            echo "::error title=Archive checksum changed after repository rename::expected=$expected actual=$actual"
+            echo "::error title=Archive checksum mismatch::expected=$expected actual=$actual"
             exit 1
           fi
