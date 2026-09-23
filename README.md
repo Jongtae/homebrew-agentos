@@ -1,7 +1,7 @@
 # Homebrew Tap for Personal AgentOS
 
 This repository is the Homebrew distribution tap for
-[Personal AgentOS](https://github.com/Jongtae/personal-agentos).
+[Personal AgentOS](https://github.com/Jongtae/agentos).
 
 Product source code, roadmap, issues, pull requests, validation evidence, and
 release notes live in the product repository. The Formula installs only a
@@ -14,5 +14,5 @@ brew install jongtae/agentos/agentos
 agentos start
 ```
 
-See the [Personal AgentOS quickstart](https://github.com/Jongtae/personal-agentos/blob/main/QUICKSTART.md)
+See the [Personal AgentOS quickstart](https://github.com/Jongtae/agentos/blob/main/QUICKSTART.md)
 for setup and supported runtime behavior.
